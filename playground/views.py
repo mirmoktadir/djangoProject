@@ -6,7 +6,7 @@ from store.models import Product, OrderItem
 # Create your views here.
 
 def hello(request):
-    # Filtering and shorting and limiting with related field
+    # Filtering and shorting and limiting with related field(if related field has one to one relation use "select_related" if has many to many relation use "prefetch_related")
     query_set = Product.objects.select_related('collection').prefetch_related('promotions').filter(
         Q(inventory__lt=10) & Q(
             unit_price__lt=20)).order_by('title')[5:10]

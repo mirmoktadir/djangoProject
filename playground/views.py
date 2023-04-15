@@ -1,31 +1,12 @@
 from django.shortcuts import render
-from django.db.models import Q
-from store.models import Product, OrderItem
+from django.db.models.aggregates import Count
+from store.models import Product
 
 
 # Create your views here.
 
 def hello(request):
-    # Filtering and shorting and limiting with related field(if related field has one to one relation use "select_related" if has many to many relation use "prefetch_related")
-    query_set = Product.objects.select_related('collection').prefetch_related('promotions').filter(
-        Q(inventory__lt=10) & Q(
-            unit_price__lt=20)).order_by('title')[5:10]
-
-    # collecting only values and then filtering
-    ordered_products = OrderItem.objects.values(
-        'product_id').distinct()  # picking ordered product id from  OrderedItem model
-    query_ordered_product = Product.objects.filter(
-        id__in=ordered_products).order_by('title')  # select all the products with those ids from Product model
-
-    return render(request, 'hello.html', {'name': 'Moktadir', 'products': list(query_ordered_product)})
-
-####### Filtering with F object
-# def me_hello(request):
-#     query = Product.objects.filter(
-#         inventory=F("unit_price")
-#     )
-#
-#     return render(request, 'hello.html', {'name': 'Moktadir', 'products': list(query)})
-
-####### Get Single Object with special key
-# product = Product.objects.get(pk=1)
+    # we can have any summary like total count, max item, max price we use aggregate.
+    # we can filter them too
+    result = Product.objects.filter(collection__id=1).aggregate(count=Count('id'))
+    return render(request, 'hello.html', {'name': 'Moktadir', 'result': result})
